@@ -1,0 +1,84 @@
+from abc import ABC, abstractmethod
+
+
+# S: Single Responsibility Principle
+class Product:
+    def _init_(self, name, price):
+        self.name = name
+        self.price = price
+
+
+class Cart:
+    def _init_(self):
+        self.items = []
+
+    def add_product(self, product, quantity):
+        self.items.append({"product": product, "quantity": quantity})
+
+
+class CartCalculator:
+    def calculate_total(cart):
+        return sum(item["product"].price * item["quantity"] for item in cart.items)
+
+
+# O: Open/Closed Principle
+class Discount(ABC):
+    @abstractmethod
+    def apply_discount(self, total):
+        pass
+
+
+class NoDiscount(Discount):
+    def apply_discount(self, total):
+        return total
+
+
+class PercentageDiscount(Discount):
+    def init(self, percentage):
+        self.percentage = percentage
+
+    def apply_discount(self, total):
+        return total - (total * self.percentage / 100)
+
+
+# L: Liskov Substitution Principle
+class PaymentMethod(ABC):
+    @abstractmethod
+    def pay(self, amount):
+        pass
+
+
+class CreditCardPayment(PaymentMethod):
+    def pay(self, amount):
+        print(f"Paid {amount} using Credit Card.")
+
+
+class PayPalPayment(PaymentMethod):
+    def pay(self, amount):
+        print(f"Paid {amount} using PayPal.")
+
+
+# I: Interface Segregation Principle
+class AddProductOperation(ABC):
+    @abstractmethod
+    def add_product(self, product, quantity):
+        pass
+
+
+class CalculateTotalOperation(ABC):
+    @abstractmethod
+    def calculate_total(self):
+        pass
+
+
+# D: Dependency Inversion Principle
+class Checkout:
+    def init(self, cart: Cart, discount: Discount, payment_method: PaymentMethod):
+        self.cart = cart
+        self.discount = discount
+        self.payment_method = payment_method
+
+    def process_payment(self):
+        total = self.cart.calculate_total()
+        total_after_discount = self.discount.apply_discount(total)
+        self.payment_method.pay(total_after_discount)
